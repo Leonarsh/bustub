@@ -42,6 +42,18 @@ Page *BufferPoolManager::FetchPageImpl(page_id_t page_id) {
   // 2.     If R is dirty, write it back to the disk.
   // 3.     Delete R from the page table and insert P.
   // 4.     Update P's metadata, read in the page content from disk, and then return a pointer to P.
+  
+  for(int i = 0; i < pool_size; i++){
+	pages_[i].RLatch();
+	if (pages_[i].page_id == page_id){
+		pages_[i].pin-count++;
+		pages_[i].RUnlatch();
+		return pages_[i];
+	}
+	
+  }
+  
+  
   return nullptr;
 }
 
@@ -58,6 +70,18 @@ Page *BufferPoolManager::NewPageImpl(page_id_t *page_id) {
   // 2.   Pick a victim page P from either the free list or the replacer. Always pick from the free list first.
   // 3.   Update P's metadata, zero out memory and add P to the page table.
   // 4.   Set the page ID output parameter. Return a pointer to P.
+  if(free_list_.front()!= NULL){
+	  frame_id_t frame_new = free_list_.front();
+	  page_table_[*page_id] = frame_new;
+	  free_list_.pop_front();
+  }
+  else{
+	  //use the replacer;
+  }
+  Page[*page_id].ResetMemory();
+
+  
+  
   return nullptr;
 }
 
@@ -67,6 +91,8 @@ bool BufferPoolManager::DeletePageImpl(page_id_t page_id) {
   // 1.   If P does not exist, return true.
   // 2.   If P exists, but has a non-zero pin-count, return false. Someone is using the page.
   // 3.   Otherwise, P can be deleted. Remove P from the page table, reset its metadata and return it to the free list.
+  
+  
   return false;
 }
 
